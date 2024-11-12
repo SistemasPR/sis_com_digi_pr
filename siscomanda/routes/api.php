@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PrintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +17,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+Route::controller(PrintController::class)->group(function (){
+    Route::post('/pruebita','index');
+    Route::post('/testingPrinterConnection','testingPrinterConnection')->name('printer_testing');
+    Route::post('/ticketBoletadeVentaApi','ticketBoletadeVentaApi');
+    Route::post('/ticketComandaApi','ticketComandaApi');
+    Route::post('/ticketVentaSalon','ticketVentaSalon');
+    Route::post('/ticketCierreApi','ticketCierreApi');
+    Route::post('/ticketPaloteoApi','ticketPaloteoApi');
+    Route::post('/ticketInventarioApi','ticketInventarioApi');
+    Route::post('/ticketMovimientoApi','ticketMovimientoApi');
 });
