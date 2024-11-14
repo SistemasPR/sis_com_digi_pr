@@ -74,10 +74,10 @@
                                       </svg>
                                 </div>
 
-                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Impresora Pizza Raul</h2>
+                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Impresora Pizza Raul v1.0.4</h2>
 
                                 <p class="mt-4 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                                    No cerrar mientras este atendiendo
+                                    No cerrar mientras este atendiendo 
                                 </p>
                             </div>
                         </a>

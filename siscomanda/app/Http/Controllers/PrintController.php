@@ -389,6 +389,8 @@ class PrintController extends Controller
                 }
             }elseif($payment_method == "YAPE"){
                     $forma_pago = "YAPE - s/$totalPagar";
+            }elseif($payment_method == "PYA"){
+                $forma_pago = "PEDIDOSYA! - s/$totalPagar";
             }else{
                 $change =  ($order->payment_with_cash + $order->payment_with_card) - $order->total_price;
                 $forma_pago = "MIXTO - E: s/$order->payment_with_cash - T: s/$order->payment_with_card ($order->payment_mp) - V: s/$change";
@@ -675,6 +677,8 @@ class PrintController extends Controller
             }else{
                 $forma_pago = "Tarjeta - s/$order->total_price";
             }
+        }elseif($payment_method == "PYA"){
+                $forma_pago = "PEDIDOSYA! - s/$order->total_price";
         }elseif($payment_method == "YAPE"){
                 $forma_pago = "YAPE - s/$order->total_price";
         }else{
@@ -956,10 +960,39 @@ class PrintController extends Controller
 
             $impresora->text("FORMA DE PAGO".' '."$forma_pago"."\n");
             $impresora->text("CLIENTE: $order->user_name\n");
-            $impresora->text("DIRECCIÓN: $order->street_name $order->street_number\n");
+            $direccion = $order->street_name." ".$order->street_number;
+
+            if($order->flat_number != null){
+                $direccion.="-dpto: $order->flat_number";
+            }
+
+            if($order->urbanization != null){
+                $direccion.=" - urb: $order->urbanization";
+            }
+
+            if($order->block != null){
+                $direccion.="- blq : $order->block";
+            }
+
+            if($order->lot_number != null){
+                $direccion.="- lote : $order->lot_number";
+            }
+
+
+            $impresora->text("DIRECCIÓN:\n");
+            $impresora->text("$direccion\n");
             $impresora->text("REFERENCIA: \n");
             $impresora->text("$order->reference\n");
             $impresora->text("TELEFONO: $order->user_phone\n");
+
+            
+            $impresora->text("OBSERVACION: $order->observation\n");
+            $impresora->text("Canal: $order->source_app\n");
+            $impresora->text("Cliente: $order->user_name\n");
+            if($order->operator_name != "" && $order->operator_name != null){
+                $impresora->text("Vendedor: $order->operator_name\n");
+            }
+
             //si es delivery
             if($order->order_type == 1){
                 $payment_way = "Online";
@@ -967,6 +1000,13 @@ class PrintController extends Controller
             }
 
             $impresora->text("\n");
+            //IDMOTORIZADO-IDPEDIDO-FECHAACTUAL
+            $testStr ="$order->courier_id"."_".$order->id."_".$date;
+            $impresora->setJustification(Printer::JUSTIFY_CENTER);
+            $impresora->text("\n");
+            $impresora->text("\n");
+            $impresora -> qrCode($testStr, Printer::QR_ECLEVEL_L, 7);
+            $impresora->text("\nAsigna en tu aplicativo de motorizado\n");
             $impresora->cut();
             $impresora->close();
             return response()->json(["message" => "IMPRESION DE TICKET DE VENTA"], 200 );
@@ -1579,6 +1619,22 @@ class PrintController extends Controller
             return  $data;
             //throw $th;
         }
+    }
+
+    function pruebaQr() {
+        
+        $connector = new WindowsPrintConnector("POS-80C");
+        $impresora = new Printer($connector);
+        $testStr ="1436_43567_2024-10-24";
+        $impresora->setJustification(Printer::JUSTIFY_CENTER);
+        $impresora->text("\n");
+        $impresora->text("\n");
+        $impresora -> qrCode($testStr, Printer::QR_ECLEVEL_L, 7);
+        //IDMOTORIZADO-IDPEDIDO-FECHAACTUAL
+        $impresora->text("\n1436_43567_2024-10-24\n");
+        $impresora->cut();
+        $impresora->close();
+        return response()->json(["message" => "IMPRESION DE TICKET DE VENTA"], 200 );
     }
 
     
