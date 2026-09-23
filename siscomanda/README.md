@@ -64,3 +64,18 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+## PRE-REQUIRES
+- PHP 8.3.*
+- NODE 23.*
+- PHP.INI https://gist.github.com/SistemasPR/57ee066ad20e18dde0cd01a836e54dc2
+
+## USIGN NATIVEPHP
+- **[commands]composer create-project --prefer-dist laravel/laravel nameproject**
+- **[commands]composer require nativephp/electron**
+- **[commands]if using apis in your proyect php artisan install:api**
+- **[commands]sqlite required php artisan migrate**
+- **[commands]php artisan native:install**
+- **[commands]php artisan native:serve -v (use v for debugin)**
+- **[commands]php artisan native:build win (use tag 0)**

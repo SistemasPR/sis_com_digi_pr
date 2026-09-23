@@ -28,6 +28,7 @@ class PrintController extends Controller
             //self::ticketBoletadeVenta($request->order,$request->items,$request->store,$request->correlativo,$request->printer);
             self::ticketDeliveryDriver($request->order,$request->items,$request->store,$request->printer);
         }
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
 
@@ -35,28 +36,34 @@ class PrintController extends Controller
         
         self::ticketBoletadeVenta($request->order,$request->items,$request->store,$request->correlativo,$request->printer);
         self::ticketCocina($request->order,$request->items,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
     public function ticketComandaApi(Request $request) {
         self::ticketCocina($request->order,$request->items,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
     public function ticketCierreApi(Request $request) {
         //info(json_encode($request->all()));
         self::ticketCierreCaja($request->store,$request->apertura_s,$request->suma_S,$request->ventas,$request->transactions_S,$request->usuario,$request->store_balance,$request->mercaderia,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
     public function ticketPaloteoApi(Request $request) {
         //info(json_encode($request->all()));
         self::ticketPaloteo($request->store,$request->data,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
     public function ticketInventarioApi(Request $request) {
         //info(json_encode($request->all()));
         self::ticketInventario($request->store,$request->data,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
     public function ticketMovimientoApi(Request $request) {
         self::ticketMovimiento($request->movimiento,$request->store,$request->printer);
+        return response()->json(["message" => "se imprimio correctamente"], 200);
     }
 
 
@@ -102,7 +109,13 @@ class PrintController extends Controller
             $impresora = new Printer($connector);
             $date = date('d-m-Y');
             $horaActual = date('h:i:s A');
-            $title_impresion = $order->fiscal_doc_type == "DNI" ? "BOLETA DE VENTA ELECTRÓNICA" : "FACTURA ELECTRÓNICA";
+            $arOtr = ["OTR","OTROS","Otro","DNI"];
+            if(in_array($order->fiscal_doc_type, $arOtr)) {
+                $title_impresion = "BOLETA DE VENTA ELECTRÓNICA";
+            }else{
+                $title_impresion = "FACTURA ELECTRÓNICA";
+            }
+
             $impresora->setFont(PRINTER::FONT_B);
             $impresora->setJustification(Printer::JUSTIFY_CENTER);
             $impresora->setTextSize(1, 1);
@@ -114,7 +127,7 @@ class PrintController extends Controller
             $impresora->text("$store->district_old, LIMA - LIMA\n");   
             $impresora->text("(01) 207 - 8130\n");   
             $impresora->setFont(PRINTER::FONT_B);
-            $impresora->text("www.pizzaraul.com\n");   
+            $impresora->text("www.pizzaraul.com\n");
             $impresora->setEmphasis(true);
             $impresora->text("================================================================\n");
             $impresora->setFont(PRINTER::FONT_B);
@@ -307,7 +320,11 @@ class PrintController extends Controller
 
     
             $impresora->setFont(PRINTER::FONT_B);
-            $order_sin_impuesto = $order->total_price / ( 1 + 0.10 );
+            $igv = $store->cfd_igv;
+            $igv = number_format($igv, 2, '.', '');
+            $porIgv = $igv / 100;
+            $porIgv = doubleval($porIgv);
+            $order_sin_impuesto = $order->total_price / ( 1 + $porIgv );
             $order_sin_impuesto =  round($order_sin_impuesto, 2);
 
             $msjOP = "OP. GRAVADAS: S/";
@@ -324,9 +341,9 @@ class PrintController extends Controller
 
 
             
-            $msjIgv = "IGV (10%): S/";
+            $msjIgv = "IGV ($igv%): S/";
             $impresora->text($msjIgv);
-            $order_impuesto = $order_sin_impuesto * 0.10;
+            $order_impuesto = $order_sin_impuesto * $porIgv;
             $order_impuesto = round($order_impuesto, 2);
             $espaciosCentro = 0;
             $espaciosCentro = self::CalculaEspacio($msjIgv,$order_impuesto);
@@ -879,8 +896,13 @@ class PrintController extends Controller
     
             }
     
+            $igv = $store->cfd_igv;
+            $igv = number_format($igv, 2, '.', '');
+            $porIgv = $igv / 100;
+            $porIgv = doubleval($porIgv);
+
             $impresora->setFont(PRINTER::FONT_B);
-            $order_sin_impuesto = $order->total_price / ( 1 + 0.10 );
+            $order_sin_impuesto = $order->total_price / ( 1 + $porIgv );
             $order_sin_impuesto =  round($order_sin_impuesto, 2);
 
             $msjOP = "OP. GRAVADAS: S/";
@@ -897,9 +919,9 @@ class PrintController extends Controller
 
 
             
-            $msjIgv = "IGV (10%): S/";
+            $msjIgv = "IGV ($igv%): S/";
             $impresora->text($msjIgv);
-            $order_impuesto = $order_sin_impuesto * 0.10;
+            $order_impuesto = $order_sin_impuesto * $porIgv;
             $order_impuesto = round($order_impuesto, 2);
             $espaciosCentro = 0;
             $espaciosCentro = self::CalculaEspacio($msjIgv,$order_impuesto);
@@ -951,6 +973,8 @@ class PrintController extends Controller
                 }
             }elseif($payment_method == "YAPE"){
                     $forma_pago = "YAPE - s/$order->total_price";
+            }elseif($payment_method == "PYA"){
+                $forma_pago = "PEDIDOSYA! - s/$order->total_price";
             }else{
                 $order->payment_with_cash = number_format($order->payment_with_cash, 2, '.', '');
                 $order->payment_with_card = number_format($order->payment_with_card, 2, '.', '');

@@ -1,3 +1,4 @@
+@use(Native\Laravel\Facades\System)
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -74,8 +75,10 @@
                                       </svg>
                                 </div>
 
-                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Impresora Pizza Raul v1.0.4</h2>
-
+                                <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Impresora Pizza Raul v1.0.6</h2>
+                                @foreach(System::printers() as $printer)
+                                  <p>{{ json_encode($printer) }}</p>
+                                @endforeach
                                 <p class="mt-4 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                                     No cerrar mientras este atendiendo 
                                 </p>
